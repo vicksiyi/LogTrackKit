@@ -27,6 +27,14 @@ var TrackJS = (function (global, document, undefined) {
         },
         isoNow: function () {
             return (new Date()).toISOString();
+        },
+        merge: function (target, source) {
+            for (var key in source) {
+                if (Util.hasOwn(source, key)) {
+                    target[key] = source[key];
+                }
+            }
+            return target;
         }
     };
 
@@ -352,6 +360,16 @@ var TrackJS = (function (global, document, undefined) {
         };
     })();
 
+    // Resource Tracker
+    var ResourceTracker = {
+        trackResource: function (resource) {
+            EventTracker.trackEvent({
+                type: "resource",
+                data: resource
+            });
+        }
+    };
+
     // Initialization
     var TrackJS = {
         initialize: function (options) {
@@ -369,6 +387,16 @@ var TrackJS = (function (global, document, undefined) {
                     stack: event.reason.stack
                 });
             });
+
+            global.addEventListener("load", function () {
+                var resources = performance.getEntriesByType("resource");
+                resources.forEach(function (resource) {
+                    ResourceTracker.trackResource(resource);
+                });
+            });
+        },
+        configure: function (options) {
+            Util.merge(Config, options);
         }
     };
 
